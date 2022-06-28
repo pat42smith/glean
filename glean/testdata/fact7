@@ -1,0 +1,11 @@
+func main() {
+   print fact(7);
+}
+
+func fact(n) {
+   if n <= 1 {
+      return 1
+   } else {
+      return n * fact(n-1)
+   }
+}
