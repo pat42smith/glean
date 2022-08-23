@@ -8,16 +8,15 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 
 	"github.com/pat42smith/glean/earley"
 )
 
 // Example uses a parser to add two integers
 func Example() {
-	gocmd := runtime.GOROOT() + "/bin/go"
-	if runtime.GOOS == "windows" {
-		gocmd += ".exe"
+	gocmd, e := exec.LookPath("go")
+	if e != nil {
+		panic(e)
 	}
 
 	tmp, e := os.MkdirTemp("", "")

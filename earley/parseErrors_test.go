@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -18,15 +17,15 @@ import (
 
 // Test for various parse errors
 func TestParseErrors(t *testing.T) {
-	gocmd := runtime.GOROOT() + "/bin/go"
-	if runtime.GOOS == "windows" {
-		gocmd += ".exe"
+	gocmd, e := exec.LookPath("go")
+	if e != nil {
+		t.Fatal(e)
 	}
 
 	tmp := t.TempDir()
 
 	mainGo := filepath.Join(tmp, "main.go")
-	e := os.WriteFile(mainGo, []byte(pmainText), 0444)
+	e = os.WriteFile(mainGo, []byte(pmainText), 0444)
 	if e != nil {
 		panic(e)
 	}

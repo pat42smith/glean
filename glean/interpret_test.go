@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 )
@@ -24,9 +23,9 @@ func runCommand(t *testing.T, cmd string, args ...string) []byte {
 
 // Test with a small interpreter
 func TestInterpreter(t *testing.T) {
-	gocmd := runtime.GOROOT() + "/bin/go"
-	if runtime.GOOS == "windows" {
-		gocmd += ".exe"
+	gocmd, e := exec.LookPath("go")
+	if e != nil {
+		t.Fatal(e)
 	}
 
 	tmp := t.TempDir()

@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"testing"
@@ -17,9 +16,9 @@ import (
 
 // Test with integer arithmetic
 func TestArithmetic(t *testing.T) {
-	gocmd := runtime.GOROOT() + "/bin/go"
-	if runtime.GOOS == "windows" {
-		gocmd += ".exe"
+	gocmd, e := exec.LookPath("go")
+	if e != nil {
+		t.Fatal(e)
 	}
 
 	tmp := t.TempDir()

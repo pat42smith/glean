@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"testing"
 )
 
@@ -26,9 +25,10 @@ func runCommandIn(t *testing.T, dir string, cmd string, args ...string) []byte {
 var gocmd string
 
 func init() {
-	gocmd = runtime.GOROOT() + "/bin/go"
-	if runtime.GOOS == "windows" {
-		gocmd += ".exe"
+	var e error
+	gocmd, e = exec.LookPath("go")
+	if e != nil {
+		panic(e)
 	}
 }
 
