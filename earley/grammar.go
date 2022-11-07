@@ -278,10 +278,10 @@ type @_Rule int
 type @_Symbol int
 
 type @_Match struct {
-	prefix @_Prefix
-	completePrefix @_Prefix
-	start, end int
-	shorter, last *@_Match
+	prefix          @_Prefix
+	completePrefix  @_Prefix
+	start, end      int
+	shorter, last   *@_Match
 	shorter2, last2 *@_Match
 }
 
@@ -293,8 +293,8 @@ func @Parse(tokens []interface{}) (#G, error) {
 
 func (parser *@_Parser) parse() (#G, error) {
 	// fmt.Fprintln(os.Stderr, parser.tokens)
-	parser.matches = make([]map[@_Prefix][]*@_Match, len(parser.tokens) + 1)
-	parser.todo = make([][]*@_Match, len(parser.tokens) + 1)
+	parser.matches = make([]map[@_Prefix][]*@_Match, len(parser.tokens)+1)
+	parser.todo = make([][]*@_Match, len(parser.tokens)+1)
 	for end := range parser.matches {
 		parser.matches[end] = make(map[@_Prefix][]*@_Match)
 	}
@@ -326,7 +326,7 @@ func (parser *@_Parser) addMatch(prefix @_Prefix, start, end int, shorter, last 
 			return
 		}
 	}
-	m := @_Match{ prefix, -1, start, end, shorter, last, nil, nil }
+	m := @_Match{prefix, -1, start, end, shorter, last, nil, nil}
 	parser.matches[end][prefix] = append(list, &m)
 	parser.todo[end] = append(parser.todo[end], &m)
 }
@@ -372,14 +372,14 @@ func (parser *@_Parser) findMatches() error {
 				for _, e := range @_extendedBy[token] {
 					if list, have := parser.matches[end][e.from]; have {
 						for _, m := range list {
-							parser.addMatch(e.to, m.start, end + 1, m, nil)
+							parser.addMatch(e.to, m.start, end+1, m, nil)
 						}
 					}
 				}
 			}
 		}
 		if token >= 0 && len(parser.todo[end+1]) == 0 {
-			return gleanerrors.Unexpected{ gleanerrors.MakeLocation(parser.tokens, end) }
+			return gleanerrors.Unexpected{gleanerrors.MakeLocation(parser.tokens, end)}
 		}
 	}
 	parser.endPrefixes = savePrefixes
@@ -388,7 +388,7 @@ func (parser *@_Parser) findMatches() error {
 
 func (parser *@_Parser) ambiguous(m1, m2 *@_Match) error {
 	return gleanerrors.Ambiguous{
-		gleanerrors.MakeRange(parser.tokens, m1.start, m1.end - 1),
+		gleanerrors.MakeRange(parser.tokens, m1.start, m1.end-1),
 		@_ruledesc[@_prefix2rule[m1.completePrefix]],
 		@_ruledesc[@_prefix2rule[m2.completePrefix]],
 	}
@@ -413,7 +413,7 @@ func (parser *@_Parser) findTrace() error {
 		}
 	}
 	if goalmatch == nil {
-		return gleanerrors.Unexpected{ gleanerrors.Location{ len(parser.tokens), nil } }
+		return gleanerrors.Unexpected{gleanerrors.Location{len(parser.tokens), nil}}
 	}
 
 	parser.trace = parser.trace[:0]
@@ -471,16 +471,22 @@ func (parser *@_Parser) findTrace() error {
 func (g *Grammar) addParserType() {
 	g.addText(`
 type @_Parser struct {
-	tokens []interface{}
-	matches []map[@_Prefix][]*@_Match
-	todo [][]*@_Match
-	trace []func(*@_Parser)
-	tokensUsed int
+	tokens      []interface{}
+	matches     []map[@_Prefix][]*@_Match
+	todo        [][]*@_Match
+	trace       []func(*@_Parser)
+	tokensUsed  int
 	endPrefixes []@_Prefix
 
 `)
+	maxLen := 0
 	for _, s := range g.symbols {
-		g.addf("\tstack%s []%s\n", s.name, s.name)
+		if l := len(s.name); l > maxLen {
+			maxLen = l
+		}
+	}
+	for _, s := range g.symbols {
+		g.addf("\tstack%-*s []%s\n", maxLen, s.name, s.name)
 	}
 	g.addString("}\n")
 }
@@ -544,7 +550,7 @@ type @_ExtBy struct {
 	from, to @_Prefix
 }
 
-var @_extendedBy = [][]@_ExtBy {
+var @_extendedBy = [][]@_ExtBy{
 `)
 
 	ext := make([][][2]int, len(g.symbols))
@@ -575,7 +581,7 @@ type @_Extend struct {
 	by, to @_Prefix
 }
 
-var @_extensions = [][]@_Extend {
+var @_extensions = [][]@_Extend{
 `)
 
 	ext := make([][][2]int, len(g.prefixes))
@@ -630,7 +636,8 @@ func @_tokenType(t interface{}) @_Symbol {
 		`	default:
 		panic(fmt.Sprintf("input token (type %T) is not a terminal symbol", t))
 	}
-}`)
+}
+`)
 }
 
 // Add the list of prefixes that complete the goal symbol
@@ -644,9 +651,9 @@ func (g *Grammar) addGoalPrefixes() {
 
 // Add the functions to apply terminals (copy to the appropriate stack)
 func (g *Grammar) addApplyTerminal() {
-	g.addText("\nvar @_applyTerminal = []func(*@_Parser) {\n")
+	g.addText("\nvar @_applyTerminal = []func(*@_Parser){\n")
 	for _, t := range g.terminals {
-		g.addText("\tfunc (parser *@_Parser) {\n")
+		g.addText("\tfunc(parser *@_Parser) {\n")
 		stack := "parser.stack" + t.name
 		g.addf("\t\t%s = append(%s, parser.tokens[parser.tokensUsed].(%s))\n", stack, stack, t.name)
 		g.addf("\t\tparser.tokensUsed++\n")
@@ -657,14 +664,14 @@ func (g *Grammar) addApplyTerminal() {
 
 // Add the functions to apply rules
 func (g *Grammar) addAppliers() {
-	g.addText("\nvar @_appliers = []func(*@_Parser) {\n")
+	g.addText("\nvar @_appliers = []func(*@_Parser){\n")
 	for _, p := range g.prefixes {
 		r := p.completedRule()
 		if r == nil {
 			g.addString("\tnil,\n")
 			continue
 		}
-		g.addText("\tfunc (parser *@_Parser) {\n")
+		g.addText("\tfunc(parser *@_Parser) {\n")
 
 		for n := len(r.items) - 1; n >= 0; n-- {
 			s := r.items[n]
@@ -688,7 +695,7 @@ func (g *Grammar) addAppliers() {
 
 // Add the mapping of prefix to completed rule
 func (g *Grammar) addPrefix2Rule() {
-	g.addText("\nvar @_prefix2rule = []@_Rule {\n")
+	g.addText("\nvar @_prefix2rule = []@_Rule{\n")
 	for _, p := range g.prefixes {
 		n := -1
 		if r := p.completedRule(); r != nil {
@@ -702,10 +709,10 @@ func (g *Grammar) addPrefix2Rule() {
 // Add the rule descriptions
 func (g *Grammar) addRuleDescriptions() {
 	g.addText(`
-var @_ruledesc = []gleanerrors.Rule {
+var @_ruledesc = []gleanerrors.Rule{
 `)
 	for _, r := range g.rules {
-		g.addText("\tgleanerrors.Rule{ ")
+		g.addText("\tgleanerrors.Rule{")
 		g.addf("\"%s\", \"%s\", []string{", r.name, r.target.name)
 		for n, i := range r.items {
 			if n > 0 {
@@ -713,7 +720,7 @@ var @_ruledesc = []gleanerrors.Rule {
 			}
 			g.addf(`"%s"`, i.name)
 		}
-		g.addString("} },\n")
+		g.addString("}},\n")
 	}
 	g.addString("}\n")
 }

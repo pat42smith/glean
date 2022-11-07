@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/pat42smith/glean/earley"
+	"github.com/pat42smith/gotest"
 )
 
 // Test with integer arithmetic
@@ -38,9 +39,7 @@ func TestArithmetic(t *testing.T) {
 	grammar.AddRule("RuleParenthesis", "Item", []string{"Open", "Sum", "Close"})
 	grammar.AddRule("RuleItem", "Item", []string{"Int"})
 	parserText, e := grammar.WriteParser("Sum", "main", "_arith")
-	if e != nil {
-		t.Fatal(e)
-	}
+	gotest.NilError(t, e)
 
 	parserGo := filepath.Join(tmp, "parser.go")
 	if e = os.WriteFile(parserGo, []byte(parserText), 0444); e != nil {
@@ -53,12 +52,18 @@ func TestArithmetic(t *testing.T) {
 		args := []string{"run", mainGo, parserGo}
 		args = append(args, tokens...)
 		got, e := exec.Command(gocmd, args...).CombinedOutput()
-		if e != nil {
-			t.Error(e)
-		}
+		gotest.NilError(t, e)
 		if string(got) != ans+"\n" {
 			t.Errorf("wrong answer %s for %v", got, test)
 		}
+	}
+
+	gofmt, e := exec.LookPath("gofmt")
+	gotest.NilError(t, e)
+	got, e := exec.Command(gofmt, "-d", parserGo).CombinedOutput()
+	gotest.NilError(t, e)
+	if len(got) > 0 {
+		t.Errorf("formatting differs from gofmt standard:\n%s", got)
 	}
 }
 
