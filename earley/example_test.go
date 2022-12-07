@@ -14,11 +14,6 @@ import (
 
 // Example uses a parser to add two integers
 func Example() {
-	gocmd, e := exec.LookPath("go")
-	if e != nil {
-		panic(e)
-	}
-
 	tmp, e := os.MkdirTemp("", "")
 	if e != nil {
 		panic(e)
@@ -49,7 +44,7 @@ func Example() {
 	}
 	defer func() { os.Remove(parserGo) }()
 
-	out, _ := exec.Command(gocmd, "run", mainGo, parserGo).CombinedOutput()
+	out, _ := exec.Command("go", "run", mainGo, parserGo).CombinedOutput()
 	fmt.Printf("%s", out)
 	// Output: 7
 }

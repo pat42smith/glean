@@ -17,11 +17,6 @@ import (
 
 // Test with integer arithmetic
 func TestArithmetic(t *testing.T) {
-	gocmd, e := exec.LookPath("go")
-	if e != nil {
-		t.Fatal(e)
-	}
-
 	tmp := t.TempDir()
 
 	mainGo := filepath.Join(tmp, "main.go")
@@ -51,7 +46,7 @@ func TestArithmetic(t *testing.T) {
 		tokens := strings.Split(test.expr, " ")
 		args := []string{"run", mainGo, parserGo}
 		args = append(args, tokens...)
-		got, e := exec.Command(gocmd, args...).CombinedOutput()
+		got, e := exec.Command("go", args...).CombinedOutput()
 		gotest.NilError(t, e)
 		if string(got) != ans+"\n" {
 			t.Errorf("wrong answer %s for %v", got, test)

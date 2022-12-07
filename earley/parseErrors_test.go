@@ -17,15 +17,10 @@ import (
 
 // Test for various parse errors
 func TestParseErrors(t *testing.T) {
-	gocmd, e := exec.LookPath("go")
-	if e != nil {
-		t.Fatal(e)
-	}
-
 	tmp := t.TempDir()
 
 	mainGo := filepath.Join(tmp, "main.go")
-	e = os.WriteFile(mainGo, []byte(pmainText), 0444)
+	e := os.WriteFile(mainGo, []byte(pmainText), 0444)
 	if e != nil {
 		panic(e)
 	}
@@ -67,7 +62,7 @@ func TestParseErrors(t *testing.T) {
 
 	run := func(t2 *testing.T, args ...string) (string, error) {
 		allargs := append([]string{"run", mainGo, parserGo}, args...)
-		out, e := exec.Command(gocmd, allargs...).CombinedOutput()
+		out, e := exec.Command("go", allargs...).CombinedOutput()
 		return string(out), e
 	}
 

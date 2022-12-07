@@ -22,22 +22,12 @@ func runCommandIn(t *testing.T, dir string, cmd string, args ...string) []byte {
 	return out
 }
 
-var gocmd string
-
-func init() {
-	var e error
-	gocmd, e = exec.LookPath("go")
-	if e != nil {
-		panic(e)
-	}
-}
-
 // Test the various usage options
 func TestUsage(t *testing.T) {
 	tmp := t.TempDir()
 
 	gleanCmd := filepath.Join(tmp, "glean")
-	out := runCommand(t, gocmd, "build", "-o", gleanCmd)
+	out := runCommand(t, "go", "build", "-o", gleanCmd)
 	if len(out) > 0 {
 		t.Fatal("unexpected output building glean:", string(out))
 	}
@@ -110,7 +100,7 @@ func tryDefaults(t *testing.T, tmp string, mainText []byte) {
 	} else if !info.Mode().IsRegular() {
 		t.Fatal("parse.go is not a regular file:", info.Mode())
 	}
-	if out := runCommandIn(t, dir, gocmd, "build"); len(out) > 0 {
+	if out := runCommandIn(t, dir, "go", "build"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
 	out := runCommandIn(t, dir, "./defaults", "3", "1", "2")
@@ -138,7 +128,7 @@ func tryOutput(t *testing.T, tmp string, mainText []byte) {
 	} else if !info.Mode().IsRegular() {
 		t.Fatal("myparser.go is not a regular file:", info.Mode())
 	}
-	if out := runCommandIn(t, dir, gocmd, "build"); len(out) > 0 {
+	if out := runCommandIn(t, dir, "go", "build"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
 	out := runCommandIn(t, dir, "./output", "17", "-5", "99", "0")
@@ -161,7 +151,7 @@ func tryTarget(t *testing.T, tmp string, mainText []byte) {
 	if out := runCommandIn(t, dir, "../glean", "-t", "Adder"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
-	if out := runCommandIn(t, dir, gocmd, "build"); len(out) > 0 {
+	if out := runCommandIn(t, dir, "go", "build"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
 	out := runCommandIn(t, dir, "./target", "3", "1", "2")
@@ -194,7 +184,7 @@ func tryPrefix(t *testing.T, tmp string, mainText []byte) {
 		t.Fatal("parse.go does not contain the string 'xyz'")
 	}
 
-	if out := runCommandIn(t, dir, gocmd, "build"); len(out) > 0 {
+	if out := runCommandIn(t, dir, "go", "build"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
 	out := runCommandIn(t, dir, "./prefix", "9", "8", "7")
@@ -223,7 +213,7 @@ func tryReplace(t *testing.T, tmp string, mainText []byte) {
 	} else if !info.Mode().IsRegular() {
 		t.Fatal("parse.go is not a regular file:", info.Mode())
 	}
-	if out := runCommandIn(t, dir, gocmd, "build"); len(out) > 0 {
+	if out := runCommandIn(t, dir, "go", "build"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
 	out := runCommandIn(t, dir, "./replace", "3", "1", "2")
@@ -235,7 +225,7 @@ func tryReplace(t *testing.T, tmp string, mainText []byte) {
 	if out = runCommandIn(t, dir, "../glean", "-t", "Adder"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
-	if out = runCommandIn(t, dir, gocmd, "build"); len(out) > 0 {
+	if out = runCommandIn(t, dir, "go", "build"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
 	out = runCommandIn(t, dir, "./replace", "3", "1", "2")
@@ -305,7 +295,7 @@ func tryIgnoreTestFiles(t *testing.T, tmp string, mainText []byte) {
 	} else if !info.Mode().IsRegular() {
 		t.Fatal("parse.go is not a regular file:", info.Mode())
 	}
-	if out := runCommandIn(t, dir, gocmd, "build"); len(out) > 0 {
+	if out := runCommandIn(t, dir, "go", "build"); len(out) > 0 {
 		t.Fatal(string(out))
 	}
 	out := runCommandIn(t, dir, "./ignore", "99", "100")

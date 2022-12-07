@@ -18,11 +18,6 @@ import (
 // 3. Add some more rules.
 // 4. Write a second parser that handles both sets of rules.
 func Example_Reuse() {
-	gocmd, e := exec.LookPath("go")
-	if e != nil {
-		panic(e)
-	}
-
 	tmp, e := os.MkdirTemp("", "")
 	if e != nil {
 		panic(e)
@@ -73,7 +68,7 @@ func Example_Reuse() {
 	}
 	defer func() { os.Remove(parser2Go) }()
 
-	out, _ := exec.Command(gocmd, "run", mainGo, parser1Go, parser2Go).CombinedOutput()
+	out, _ := exec.Command("go", "run", mainGo, parser1Go, parser2Go).CombinedOutput()
 	fmt.Printf("%s", out)
 	// Output:
 	// 17

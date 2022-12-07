@@ -23,11 +23,6 @@ func runCommand(t *testing.T, cmd string, args ...string) []byte {
 
 // Test with a small interpreter
 func TestInterpreter(t *testing.T) {
-	gocmd, e := exec.LookPath("go")
-	if e != nil {
-		t.Fatal(e)
-	}
-
 	tmp := t.TempDir()
 
 	mainGo := filepath.Join(tmp, "main.go")
@@ -40,7 +35,7 @@ func TestInterpreter(t *testing.T) {
 	}
 
 	gleanCmd := filepath.Join(tmp, "glean")
-	out := runCommand(t, gocmd, "build", "-o", gleanCmd)
+	out := runCommand(t, "go", "build", "-o", gleanCmd)
 	if len(out) > 0 {
 		t.Fatal("unexpected output building glean:", string(out))
 	}
@@ -52,7 +47,7 @@ func TestInterpreter(t *testing.T) {
 	}
 
 	interpreter := filepath.Join(tmp, "interpret")
-	out = runCommand(t, gocmd, "build", "-o", interpreter, mainGo, parseGo)
+	out = runCommand(t, "go", "build", "-o", interpreter, mainGo, parseGo)
 	if len(out) > 0 {
 		t.Fatal("unexpected output building interpreter:", string(out))
 	}
