@@ -1,15 +1,17 @@
-// Copyright 2021 Patrick Smith
+// Copyright 2021-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package earley
 
 import (
 	"sort"
+
+	"github.com/pat42smith/glean"
 )
 
 // A grammar symbol
 type symbol struct {
-	name    string
+	name    glean.Symbol
 	rules   []*rule
 	id      int
 	prefix0 *prefix

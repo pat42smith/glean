@@ -1,4 +1,4 @@
-// Copyright 2021 Patrick Smith
+// Copyright 2021-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package earley_test
@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/pat42smith/glean"
 	"github.com/pat42smith/glean/earley"
 )
 
@@ -32,11 +33,11 @@ func Example_Reuse() {
 	defer func() { os.Remove(mainGo) }()
 
 	var g earley.Grammar
-	e = g.AddRule("RuleInt", "Sum", []string{"int"})
+	e = g.AddRule("RuleInt", "Sum", []glean.Symbol{"int"})
 	if e != nil {
 		panic(e)
 	}
-	e = g.AddRule("RuleAdd", "Sum", []string{"Sum", "Plus", "int"})
+	e = g.AddRule("RuleAdd", "Sum", []glean.Symbol{"Sum", "Plus", "int"})
 	if e != nil {
 		panic(e)
 	}
@@ -52,7 +53,7 @@ func Example_Reuse() {
 	}
 	defer func() { os.Remove(parser1Go) }()
 
-	e = g.AddRule("RuleSubtract", "Sum", []string{"Sum", "Minus", "int"})
+	e = g.AddRule("RuleSubtract", "Sum", []glean.Symbol{"Sum", "Minus", "int"})
 	if e != nil {
 		panic(e)
 	}

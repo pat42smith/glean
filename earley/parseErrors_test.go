@@ -1,4 +1,4 @@
-// Copyright 2022 Patrick Smith
+// Copyright 2022-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package earley_test
@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pat42smith/glean"
 	"github.com/pat42smith/glean/earley"
 )
 
@@ -26,7 +27,7 @@ func TestParseErrors(t *testing.T) {
 	}
 
 	var g earley.Grammar
-	addrule := func(name, target string, items ...string) {
+	addrule := func(name string, target glean.Symbol, items ...glean.Symbol) {
 		if e := g.AddRule(name, target, items); e != nil {
 			panic(e)
 		}

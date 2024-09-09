@@ -1,4 +1,4 @@
-// Copyright 2021 Patrick Smith
+// Copyright 2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 // Package glean contains useful utilities for parser generators.
@@ -157,14 +157,14 @@ func (s *scanner) scanFile(f *ast.File) error {
 	return nil
 }
 
-// typeList returns the types from a parameter list or argument list.
+// typeList returns the types from a parameter list or result list.
 // If the second result is not NoPos, then it indicates the position
 // of the first type that is not a simple identifier.
-func typeList(fl *ast.FieldList, fset *token.FileSet) ([]string, token.Pos) {
+func typeList(fl *ast.FieldList, fset *token.FileSet) ([]Symbol, token.Pos) {
 	if fl == nil {
 		return nil, token.NoPos
 	}
-	types := make([]string, 0, len(fl.List))
+	types := make([]Symbol, 0, len(fl.List))
 	for _, field := range fl.List {
 		count := len(field.Names)
 		if count == 0 {
@@ -174,7 +174,7 @@ func typeList(fl *ast.FieldList, fset *token.FileSet) ([]string, token.Pos) {
 		if !isId {
 			return nil, field.Type.Pos()
 		}
-		typeName := typeId.Name
+		typeName := Symbol(typeId.Name)
 		for i := 0; i < count; i++ {
 			types = append(types, typeName)
 		}

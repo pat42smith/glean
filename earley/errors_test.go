@@ -1,10 +1,12 @@
-// Copyright 2021 Patrick Smith
+// Copyright 2021-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package earley
 
 import (
 	"testing"
+
+	"github.com/pat42smith/glean"
 )
 
 func CheckZero(t *testing.T, g Grammar) {
@@ -36,36 +38,36 @@ func MustError(t *testing.T, f, want string, e error) {
 func TestAddRuleErrors(t *testing.T) {
 	var g Grammar
 
-	e := g.AddRule("", "target", []string{"foo", "bar"})
+	e := g.AddRule("", "target", []glean.Symbol{"foo", "bar"})
 	MustError(t, "AddRule", "rule name '' is not a valid Go identifier", e)
 	CheckZero(t, g)
 
-	e = g.AddRule("17", "target", []string{"foo", "bar"})
+	e = g.AddRule("17", "target", []glean.Symbol{"foo", "bar"})
 	MustError(t, "AddRule", "rule name '17' is not a valid Go identifier", e)
 	CheckZero(t, g)
 
-	e = g.AddRule("Rule", "", []string{"foo", "bar"})
+	e = g.AddRule("Rule", "", []glean.Symbol{"foo", "bar"})
 	MustError(t, "AddRule", "target symbol '' is not a valid Go identifier", e)
 	CheckZero(t, g)
 
-	e = g.AddRule("Rule", "@@", []string{"foo", "bar"})
+	e = g.AddRule("Rule", "@@", []glean.Symbol{"foo", "bar"})
 	MustError(t, "AddRule", "target symbol '@@' is not a valid Go identifier", e)
 	CheckZero(t, g)
 
-	e = g.AddRule("Rule", "target", []string{"foo", "", "bar"})
+	e = g.AddRule("Rule", "target", []glean.Symbol{"foo", "", "bar"})
 	MustError(t, "AddRule", "rule item '' is not a valid Go identifier", e)
 	CheckZero(t, g)
 
-	e = g.AddRule("Rule", "target", []string{"foo", "x.y.z", "bar"})
+	e = g.AddRule("Rule", "target", []glean.Symbol{"foo", "x.y.z", "bar"})
 	MustError(t, "AddRule", "rule item 'x.y.z' is not a valid Go identifier", e)
 	CheckZero(t, g)
 
-	e = g.AddRule("Rule", "target", []string{"foo", "bar"})
+	e = g.AddRule("Rule", "target", []glean.Symbol{"foo", "bar"})
 	if e != nil {
 		t.Fatal("valid call to AddRule failed:", e)
 	}
 
-	e = g.AddRule("Rule", "other", []string{"alpha", "beta", "gamma"})
+	e = g.AddRule("Rule", "other", []glean.Symbol{"alpha", "beta", "gamma"})
 	MustError(t, "AddRule", "duplicate rule name: Rule", e)
 }
 
@@ -83,7 +85,7 @@ func TestWriteParserErrors(t *testing.T) {
 	text, e := g.WriteParser("Goal", "main", "_")
 	WPMustError(t, "grammar has no rules", text, e)
 
-	e = g.AddRule("RuleGoal", "Goal", []string{"step"})
+	e = g.AddRule("RuleGoal", "Goal", []glean.Symbol{"step"})
 	if e != nil {
 		t.Fatal("AddRule failed:", e)
 	}
@@ -110,7 +112,7 @@ func TestWriteParserErrors(t *testing.T) {
 		t.Fatal("WriteParser failed:", e)
 	}
 
-	e = g.AddRule("RuleStep", "step", []string{})
+	e = g.AddRule("RuleStep", "step", []glean.Symbol{})
 	if e != nil {
 		t.Fatal("AddRule failed:", e)
 	}

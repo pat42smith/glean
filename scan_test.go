@@ -1,4 +1,4 @@
-// Copyright 2021 Patrick Smith
+// Copyright 2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package glean
@@ -16,7 +16,7 @@ import (
 // so they can be checked against the rules we expect.
 type ruleStringer []string
 
-func (r *ruleStringer) AddRule(name, target string, items []string) error {
+func (r *ruleStringer) AddRule(name string, target Symbol, items []Symbol) error {
 	for _, s := range *r {
 		if strings.HasPrefix(s, name+" ") {
 			panic("duplicate rule name")

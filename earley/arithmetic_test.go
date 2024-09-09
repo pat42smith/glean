@@ -1,4 +1,4 @@
-// Copyright 2022 Patrick Smith
+// Copyright 2022-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package earley_test
@@ -11,8 +11,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pat42smith/glean"
 	"github.com/pat42smith/glean/earley"
-	"github.com/pat42smith/gotest"
+	"github.com/pat42smith/or"
 )
 
 // Test with integer arithmetic
@@ -24,17 +25,19 @@ func TestArithmetic(t *testing.T) {
 		t.Fatal(e)
 	}
 
-	var grammar earley.Grammar
-	grammar.AddRule("RuleSum", "Sum", []string{"Product"})
-	grammar.AddRule("RuleAdd", "Sum", []string{"Sum", "Plus", "Product"})
-	grammar.AddRule("RuleSubtract", "Sum", []string{"Sum", "Minus", "Product"})
-	grammar.AddRule("RuleProduct", "Product", []string{"Item"})
-	grammar.AddRule("RuleMultiply", "Product", []string{"Product", "Times", "Item"})
-	grammar.AddRule("RuleDivide", "Product", []string{"Product", "Divide", "Item"})
-	grammar.AddRule("RuleParenthesis", "Item", []string{"Open", "Sum", "Close"})
-	grammar.AddRule("RuleItem", "Item", []string{"Int"})
+	// Check that *earley.Grammar can be converted to glean.Grammar
+	var grammar glean.Grammar = new(earley.Grammar)
+
+	grammar.AddRule("RuleSum", "Sum", []glean.Symbol{"Product"})
+	grammar.AddRule("RuleAdd", "Sum", []glean.Symbol{"Sum", "Plus", "Product"})
+	grammar.AddRule("RuleSubtract", "Sum", []glean.Symbol{"Sum", "Minus", "Product"})
+	grammar.AddRule("RuleProduct", "Product", []glean.Symbol{"Item"})
+	grammar.AddRule("RuleMultiply", "Product", []glean.Symbol{"Product", "Times", "Item"})
+	grammar.AddRule("RuleDivide", "Product", []glean.Symbol{"Product", "Divide", "Item"})
+	grammar.AddRule("RuleParenthesis", "Item", []glean.Symbol{"Open", "Sum", "Close"})
+	grammar.AddRule("RuleItem", "Item", []glean.Symbol{"Int"})
 	parserText, e := grammar.WriteParser("Sum", "main", "_arith")
-	gotest.NilError(t, e)
+	or.Fatal0(e)(t)
 
 	parserGo := filepath.Join(tmp, "parser.go")
 	if e = os.WriteFile(parserGo, []byte(parserText), 0444); e != nil {
@@ -47,16 +50,16 @@ func TestArithmetic(t *testing.T) {
 		args := []string{"run", mainGo, parserGo}
 		args = append(args, tokens...)
 		got, e := exec.Command("go", args...).CombinedOutput()
-		gotest.NilError(t, e)
+		or.Fatal0(e)(t)
 		if string(got) != ans+"\n" {
 			t.Errorf("wrong answer %s for %v", got, test)
 		}
 	}
 
 	gofmt, e := exec.LookPath("gofmt")
-	gotest.NilError(t, e)
+	or.Fatal0(e)(t)
 	got, e := exec.Command(gofmt, "-d", parserGo).CombinedOutput()
-	gotest.NilError(t, e)
+	or.Fatal0(e)(t)
 	if len(got) > 0 {
 		t.Errorf("formatting differs from gofmt standard:\n%s", got)
 	}

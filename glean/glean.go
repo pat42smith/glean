@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Patrick Smith
+// Copyright 2021-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package main
@@ -93,7 +93,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, w)
 	}
 
-	parserText, err := g.WriteParser(*pTarget, pkg, *pPrefix)
+	parserText, err := g.WriteParser(glean.Symbol(*pTarget), pkg, *pPrefix)
 	if err != nil {
 		die(err)
 	}

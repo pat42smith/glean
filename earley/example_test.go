@@ -1,4 +1,4 @@
-// Copyright 2021 Patrick Smith
+// Copyright 2021-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package earley_test
@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/pat42smith/glean"
 	"github.com/pat42smith/glean/earley"
 )
 
@@ -28,7 +29,7 @@ func Example() {
 	defer func() { os.Remove(mainGo) }()
 
 	var g earley.Grammar
-	e = g.AddRule("RuleAdd", "Sum", []string{"int", "int"})
+	e = g.AddRule("RuleAdd", "Sum", []glean.Symbol{"int", "int"})
 	if e != nil {
 		panic(e)
 	}

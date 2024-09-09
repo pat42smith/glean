@@ -1,4 +1,4 @@
-// Copyright 2021-2022 Patrick Smith
+// Copyright 2021-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 // Package earley contains an implementation of glean.Grammar using
@@ -10,30 +10,33 @@ import (
 	"go/token"
 	"strconv"
 	"strings"
+
+	"github.com/pat42smith/glean"
 )
 
 // *Grammar is an Earley implentation of glean.Grammar.
 type Grammar struct {
 	rulenames                        map[string]struct{}
-	name2symbol                      map[string]*symbol
+	name2symbol                      map[glean.Symbol]*symbol
 	rules                            []*rule
 	symbols, terminals, nonterminals []*symbol
 	prefixes                         []*prefix
-	goalname, packname, prepend      string // WriteParser arguments
+	goalname                         glean.Symbol // WriteParser argument
+	packname, prepend                string       // more WriteParser arguments
 	goal                             *symbol
 	builder                          *strings.Builder // accumulates parser text
 }
 
 // Implements glean.RuleAdder.AddRule.
-func (g *Grammar) AddRule(name, target string, items []string) error {
+func (g *Grammar) AddRule(name string, target glean.Symbol, items []glean.Symbol) error {
 	if !token.IsIdentifier(name) {
 		return fmt.Errorf("rule name '%s' is not a valid Go identifier", name)
 	}
-	if !token.IsIdentifier(target) {
+	if !token.IsIdentifier(string(target)) {
 		return fmt.Errorf("target symbol '%s' is not a valid Go identifier", target)
 	}
 	for _, item := range items {
-		if !token.IsIdentifier(item) {
+		if !token.IsIdentifier(string(item)) {
 			return fmt.Errorf("rule item '%s' is not a valid Go identifier", item)
 		}
 	}
@@ -42,7 +45,7 @@ func (g *Grammar) AddRule(name, target string, items []string) error {
 		g.rulenames = make(map[string]struct{})
 	}
 	if g.name2symbol == nil {
-		g.name2symbol = make(map[string]*symbol)
+		g.name2symbol = make(map[glean.Symbol]*symbol)
 	}
 
 	if _, have := g.rulenames[name]; have {
@@ -65,7 +68,7 @@ func (g *Grammar) AddRule(name, target string, items []string) error {
 }
 
 // Finds or creates a symbol from its name
-func (g *Grammar) findSymbol(name string) *symbol {
+func (g *Grammar) findSymbol(name glean.Symbol) *symbol {
 	if s, have := g.name2symbol[name]; have {
 		return s
 	}
@@ -75,11 +78,11 @@ func (g *Grammar) findSymbol(name string) *symbol {
 }
 
 // Implements glean.ParserWriter.WriteParser.
-func (g *Grammar) WriteParser(goal, packname, prepend string) (string, error) {
+func (g *Grammar) WriteParser(goal glean.Symbol, packname, prepend string) (string, error) {
 	if len(g.rulenames) == 0 {
 		return "", fmt.Errorf("grammar has no rules")
 	}
-	if !token.IsIdentifier(goal) {
+	if !token.IsIdentifier(string(goal)) {
 		return "", fmt.Errorf("goal '%s' is not a valid Go identifier", goal)
 	}
 	if !token.IsIdentifier(packname) {
@@ -218,7 +221,7 @@ func (g *Grammar) addText(s string) {
 			var t string
 			switch d {
 			case 'G':
-				t = g.goal.name
+				t = string(g.goal.name)
 			case 'g':
 				t = strconv.Itoa(g.goal.prefix0.id)
 			case 'P':
