@@ -1,4 +1,4 @@
-// Copyright 2022 Patrick Smith
+// Copyright 2022-2024 Patrick Smith
 // Use of this source code is subject to the MIT-style license in the LICENSE file.
 
 package main_test
@@ -78,6 +78,9 @@ func TestUsage(t *testing.T) {
 	})
 	t.Run("Help", func(t2 *testing.T) {
 		tryHelp(t2, tmp)
+	})
+	t.Run("Print", func(t2 *testing.T) {
+		tryPrint(t2, tmp, mainText)
 	})
 }
 
@@ -308,5 +311,27 @@ func tryHelp(t *testing.T, tmp string) {
 	out := runCommandIn(t, tmp, "./glean", "-h")
 	if !bytes.HasPrefix(out, []byte("\nUsage: ")) {
 		t.Fatal("Invalid help information:\n", string(out))
+	}
+}
+
+func tryPrint(t *testing.T, tmp string, mainText []byte) {
+	dir := filepath.Join(tmp, "print")
+	if e := os.Mkdir(dir, 0700); e != nil {
+		t.Fatal(e)
+	}
+
+	mainGo := filepath.Join(dir, "main.go")
+	if e := os.WriteFile(mainGo, mainText, 0444); e != nil {
+		t.Fatal(e)
+	}
+
+	out := runCommandIn(t, dir, "../glean", "-P")
+	if string(out) != `Sorted =
+Sorted = Sorted int
+Target = Sorted
+Adder =
+Adder = Adder int
+` {
+		t.Fatal("Wrong print output: \n", string(out))
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"strings"
 
 	"github.com/pat42smith/glean"
 	"github.com/pat42smith/glean/earley"
@@ -44,6 +45,7 @@ func main() {
 	pHelp := flag.Bool("h", false, "print this help information")
 	pOutFile := flag.String("o", "parse.go", "name of the Go file in which to write the parser")
 	pPrefix := flag.String("p", "_glean_", "prefix for file scope names in the parser code")
+	pPrint := flag.Bool("P", false, "print the grammar rules, do not generate a parser")
 	pTarget := flag.String("t", "Target", "target symbol, the result of the parse")
 
 	flag.CommandLine.Usage = usage
@@ -51,6 +53,31 @@ func main() {
 
 	if *pHelp {
 		usage()
+		return
+	}
+
+	var pkg string
+	getRules := func(g glean.RuleAdder) {
+		args := flag.Args()
+		var warnings []error
+		var err error
+		if len(args) == 0 {
+			pkg, warnings, err = glean.ScanDir(g, ".")
+		} else {
+			pkg, warnings, err = glean.ScanFiles(g, args...)
+		}
+		if err != nil {
+			die(err)
+		}
+		for _, w := range warnings {
+			fmt.Fprintln(os.Stderr, w)
+		}
+	}
+
+	if *pPrint {
+		gp := make(grammarPrinter)
+		getRules(gp)
+		gp.Print()
 		return
 	}
 
@@ -77,21 +104,7 @@ func main() {
 	}
 
 	var g glean.Grammar = new(earley.Grammar)
-	args := flag.Args()
-	var pkg string
-	var warnings []error
-	var err error
-	if len(args) == 0 {
-		pkg, warnings, err = glean.ScanDir(g, ".")
-	} else {
-		pkg, warnings, err = glean.ScanFiles(g, args...)
-	}
-	if err != nil {
-		die(err)
-	}
-	for _, w := range warnings {
-		fmt.Fprintln(os.Stderr, w)
-	}
+	getRules(g)
 
 	parserText, err := g.WriteParser(glean.Symbol(*pTarget), pkg, *pPrefix)
 	if err != nil {
@@ -101,5 +114,29 @@ func main() {
 
 	if e := os.WriteFile(outFile, []byte(parserText), 0644); e != nil {
 		die(e)
+	}
+}
+
+// A grammarPrinter keeps a list of grammar rules and prints them.
+//
+// The rules for a target will be bunched together.
+type grammarPrinter map[glean.Symbol]string
+
+func (gp grammarPrinter) AddRule(name string, target glean.Symbol, items []glean.Symbol) error {
+	var b strings.Builder
+	b.WriteString(string(target))
+	b.WriteString(" =")
+	for _, i := range items {
+		b.WriteString(" ")
+		b.WriteString(string(i))
+	}
+	b.WriteString("\n")
+	gp[target] += b.String()
+	return nil
+}
+
+func (gp grammarPrinter) Print() {
+	for _, s := range gp {
+		fmt.Print(s)
 	}
 }
